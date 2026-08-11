@@ -81,31 +81,19 @@ body {
   mask-image: linear-gradient(to bottom, black, transparent 92%);
 }
 
-.hero-visual::before {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(120deg, transparent 30%, color-mix(in srgb, var(--color-violet) 7%, transparent), transparent 70%);
-  content: "";
-}
-
-.hero-visual::after {
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(color-mix(in srgb, var(--color-blue) 32%, transparent) 0.75px, transparent 0.75px);
-  background-size: 1rem 1rem;
-  content: "";
-  mask-image: radial-gradient(circle, black, transparent 70%);
-}
-
-.hero-orbit {
-  box-shadow: 0 0 4rem color-mix(in srgb, var(--color-violet) 12%, transparent);
-}
-
 .graph-shell {
   background-image:
     linear-gradient(color-mix(in srgb, var(--color-panel-border) 18%, transparent) 1px, transparent 1px),
     linear-gradient(90deg, color-mix(in srgb, var(--color-panel-border) 18%, transparent) 1px, transparent 1px),
     radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--color-violet) 10%, transparent), transparent 48%);
+  background-size: 2rem 2rem, 2rem 2rem, auto;
+}
+
+.twin-shell {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--color-panel-border) 18%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--color-panel-border) 18%, transparent) 1px, transparent 1px),
+    radial-gradient(circle at 50% 48%, color-mix(in srgb, var(--color-blue) 13%, transparent), transparent 45%);
   background-size: 2rem 2rem, 2rem 2rem, auto;
 }
 

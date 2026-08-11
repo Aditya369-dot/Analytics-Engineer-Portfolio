@@ -8,9 +8,12 @@ import {
   type GraphNodeId,
 } from "@/data/graph-data";
 import { GraphNodeDetails } from "@/components/hero/GraphNodeDetails";
+import type { KnowledgeItemId } from "@/data/knowledge";
 
 type KnowledgeGraphProps = {
   className?: string;
+  illuminatedNodeIds?: readonly KnowledgeItemId[];
+  relatedIlluminatedNodeIds?: readonly KnowledgeItemId[];
 };
 
 const categoryStyles = {
@@ -22,7 +25,11 @@ const categoryStyles = {
   tool: { fill: "fill-accent-blue", ring: "stroke-accent-blue" },
 } as const;
 
-export function KnowledgeGraph({ className = "" }: KnowledgeGraphProps) {
+export function KnowledgeGraph({
+  className = "",
+  illuminatedNodeIds = [],
+  relatedIlluminatedNodeIds = [],
+}: KnowledgeGraphProps) {
   const [selectedId, setSelectedId] = useState<GraphNodeId>("analytics-engineering");
   const [hoveredId, setHoveredId] = useState<GraphNodeId | null>(null);
   const [rotation, setRotation] = useState(0);
@@ -40,6 +47,15 @@ export function KnowledgeGraph({ className = "" }: KnowledgeGraphProps) {
   }, []);
 
   const focusedId = hoveredId ?? selectedId;
+  const illuminatedIds = useMemo(
+    () => new Set<KnowledgeItemId>(illuminatedNodeIds),
+    [illuminatedNodeIds],
+  );
+  const relatedIlluminatedIds = useMemo(
+    () => new Set<KnowledgeItemId>(relatedIlluminatedNodeIds),
+    [relatedIlluminatedNodeIds],
+  );
+  const hasResponseHighlight = illuminatedIds.size > 0 || relatedIlluminatedIds.size > 0;
   const connectedIds = useMemo(() => {
     const ids = new Set<GraphNodeId>([focusedId]);
 
@@ -138,6 +154,17 @@ export function KnowledgeGraph({ className = "" }: KnowledgeGraphProps) {
               const source = graphPresentation[edge.source];
               const target = graphPresentation[edge.target];
               const isActive = edge.source === focusedId || edge.target === focusedId;
+              const sourceIsStrong = illuminatedIds.has(edge.source);
+              const targetIsStrong = illuminatedIds.has(edge.target);
+              const sourceIsRelated = relatedIlluminatedIds.has(edge.source);
+              const targetIsRelated = relatedIlluminatedIds.has(edge.target);
+              const isResponseActive =
+                (sourceIsStrong && (targetIsStrong || targetIsRelated)) ||
+                (targetIsStrong && (sourceIsStrong || sourceIsRelated));
+              const isResponseRelated = sourceIsRelated || targetIsRelated;
+              const transitionClass = prefersReducedMotion
+                ? "transition-none"
+                : "transition-[stroke,opacity] duration-300";
 
               return (
                 <line
@@ -146,8 +173,18 @@ export function KnowledgeGraph({ className = "" }: KnowledgeGraphProps) {
                   y1={source.y}
                   x2={target.x}
                   y2={target.y}
-                  className={`transition-[stroke,opacity] duration-200 ${isActive ? "stroke-accent-cyan opacity-100" : "stroke-accent-violet opacity-25"}`}
-                  strokeWidth={isActive ? 1.6 : 0.8}
+                  className={`${transitionClass} ${
+                    hasResponseHighlight
+                      ? isResponseActive
+                        ? "stroke-accent-cyan opacity-100"
+                        : isResponseRelated
+                          ? "stroke-accent-violet opacity-40"
+                          : "stroke-accent-violet opacity-10"
+                      : isActive
+                        ? "stroke-accent-cyan opacity-100"
+                        : "stroke-accent-violet opacity-25"
+                  }`}
+                  strokeWidth={isResponseActive || (!hasResponseHighlight && isActive) ? 1.6 : 0.8}
                   vectorEffect="non-scaling-stroke"
                 />
               );
@@ -159,6 +196,23 @@ export function KnowledgeGraph({ className = "" }: KnowledgeGraphProps) {
               const isFocused = node.id === focusedId;
               const isSelected = node.id === selectedId;
               const isConnected = connectedIds.has(node.id);
+              const isResponseStrong = illuminatedIds.has(node.id);
+              const isResponseRelated = relatedIlluminatedIds.has(node.id);
+              const responseOpacity = isResponseStrong
+                ? "opacity-100"
+                : isResponseRelated
+                  ? "opacity-60"
+                  : isFocused
+                    ? "opacity-100"
+                    : "opacity-20";
+              const nodeOpacity = hasResponseHighlight
+                ? responseOpacity
+                : isConnected
+                  ? "opacity-100"
+                  : "opacity-25";
+              const transitionClass = prefersReducedMotion
+                ? "transition-none"
+                : "transition-opacity duration-300";
               const radius = 3.8 + (node.importance ?? 0.5) * 3.6;
 
               return (
@@ -168,7 +222,7 @@ export function KnowledgeGraph({ className = "" }: KnowledgeGraphProps) {
                   tabIndex={0}
                   aria-label={`View ${node.label} details`}
                   aria-pressed={isSelected}
-                  className={`group/node outline-none transition-opacity duration-200 ${isConnected ? "opacity-100" : "opacity-25"}`}
+                  className={`group/node outline-none ${transitionClass} ${nodeOpacity}`}
                   onPointerEnter={() => setHoveredId(node.id)}
                   onPointerLeave={() => setHoveredId(null)}
                   onClick={() => selectNode(node.id)}
@@ -183,22 +237,22 @@ export function KnowledgeGraph({ className = "" }: KnowledgeGraphProps) {
                     cx={position.x}
                     cy={position.y}
                     r={radius * 3.1}
-                    className={`${style.fill} transition-opacity duration-200 ${isFocused ? "opacity-20" : "opacity-5"}`}
+                    className={`${style.fill} ${prefersReducedMotion ? "transition-none" : "transition-opacity duration-300"} ${isFocused || isResponseStrong ? "opacity-20" : isResponseRelated ? "opacity-10" : "opacity-5"}`}
                   />
                   <circle
                     cx={position.x}
                     cy={position.y}
                     r={radius + (isFocused ? 2 : 0)}
-                    className={`${style.fill} ${style.ring} transition-all duration-200 group-focus/node:stroke-[3px]`}
-                    strokeWidth={isSelected ? 2 : 1}
-                    filter={isConnected ? "url(#graph-node-glow)" : undefined}
+                    className={`${style.fill} ${style.ring} ${prefersReducedMotion ? "transition-none" : "transition-all duration-300"} group-focus/node:stroke-[3px]`}
+                    strokeWidth={isResponseStrong ? 2.5 : isSelected ? 2 : 1}
+                    filter={isConnected || isResponseStrong || isResponseRelated ? "url(#graph-node-glow)" : undefined}
                     style={{ opacity: 0.7 + position.depth * 0.3 }}
                   />
                   <text
                     x={position.x}
                     y={position.y - radius - 8}
                     textAnchor="middle"
-                    className={`pointer-events-none fill-current font-display uppercase tracking-[0.08em] transition-colors duration-200 ${isFocused || isSelected ? "text-foreground" : "text-muted-foreground"}`}
+                    className={`pointer-events-none fill-current font-display uppercase tracking-[0.08em] ${prefersReducedMotion ? "transition-none" : "transition-colors duration-300"} ${isFocused || isSelected || isResponseStrong ? "text-foreground" : isResponseRelated ? "text-accent-cyan" : "text-muted-foreground"}`}
                     fontSize={node.id === "analytics-engineering" ? 11 : 9.5}
                     fontWeight={isFocused || isSelected ? 650 : 500}
                   >

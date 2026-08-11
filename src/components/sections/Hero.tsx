@@ -1,8 +1,13 @@
+"use client";
+
+import { useState } from "react";
 import { heroContent, socialLinks } from "@/data/portfolio";
+import { DigitalTwin } from "@/components/hero/DigitalTwin";
 import { KnowledgeGraph } from "@/components/hero/KnowledgeGraph";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { Container } from "@/components/ui/Container";
 import { SectionLabel } from "@/components/ui/SectionLabel";
+import type { KnowledgeItemId } from "@/data/knowledge";
 
 type SocialIconProps = {
   icon: (typeof socialLinks)[number]["icon"];
@@ -33,47 +38,10 @@ function SocialIcon({ icon }: SocialIconProps) {
   );
 }
 
-function VisualPlaceholder({
-  index,
-  label,
-  title,
-  className = "",
-}: {
-  index: string;
-  label: string;
-  title: string;
-  className?: string;
-}) {
-  return (
-    <div
-      className={`hero-visual relative isolate min-h-80 overflow-hidden rounded-[var(--radius-panel)] border border-panel-border bg-panel-muted ${className}`}
-      aria-label={`${title} placeholder`}
-    >
-      <div className="absolute inset-x-5 top-5 z-10 flex items-center justify-between font-display text-[0.625rem] uppercase tracking-[0.2em] text-muted-foreground">
-        <span>{index}</span>
-        <span className="flex items-center gap-2">
-          <span className="size-1.5 rounded-full bg-status" />
-          {label}
-        </span>
-      </div>
-
-      <div className="absolute inset-0 grid place-items-center" aria-hidden="true">
-        <div className="hero-orbit size-44 rounded-full border border-accent-violet/30" />
-        <div className="absolute size-28 rounded-full border border-accent-blue/25" />
-        <div className="absolute size-2 rounded-full bg-accent-cyan shadow-[0_0_18px_var(--color-cyan)]" />
-      </div>
-
-      <div className="absolute inset-x-5 bottom-5 z-10 border-t border-panel-border/70 pt-4">
-        <p className="font-display text-sm font-medium uppercase tracking-[0.14em] text-foreground">
-          {title}
-        </p>
-        <p className="mt-1 text-xs text-muted-foreground">Visual module reserved</p>
-      </div>
-    </div>
-  );
-}
-
 export function Hero() {
+  const [retrievedNodeIds, setRetrievedNodeIds] = useState<readonly KnowledgeItemId[]>([]);
+  const [relatedNodeIds, setRelatedNodeIds] = useState<readonly KnowledgeItemId[]>([]);
+
   return (
     <section id="home" className="relative scroll-mt-18 overflow-hidden border-b border-panel-border/50 py-12 sm:py-16 xl:py-16">
       <div className="hero-ambient pointer-events-none absolute inset-0" aria-hidden="true" />
@@ -121,12 +89,17 @@ export function Hero() {
           </div>
         </div>
 
-        <KnowledgeGraph className="md:min-h-[28rem] xl:min-h-[30rem]" />
-        <VisualPlaceholder
-          index="SYS / 02"
-          label="Asset pending"
-          title="Digital twin"
+        <KnowledgeGraph
+          className="md:min-h-[28rem] xl:min-h-[30rem]"
+          illuminatedNodeIds={retrievedNodeIds}
+          relatedIlluminatedNodeIds={relatedNodeIds}
+        />
+        <DigitalTwin
           className="min-h-64 sm:min-h-80 md:min-h-[28rem] xl:min-h-[34rem]"
+          onGraphResponse={(nodeIds, relatedIds) => {
+            setRetrievedNodeIds(nodeIds);
+            setRelatedNodeIds(relatedIds);
+          }}
         />
       </Container>
     </section>

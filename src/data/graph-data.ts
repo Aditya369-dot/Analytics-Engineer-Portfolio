@@ -19,7 +19,8 @@ export const graphNodeIds = [
 export type GraphNodeId = (typeof graphNodeIds)[number];
 export type GraphCategory = "core" | "data" | "analytics" | "ai" | "platform" | "tool";
 
-export type GraphNode = PortfolioKnowledgeItem & {
+export type GraphNode = Omit<PortfolioKnowledgeItem, "id"> & {
+  id: GraphNodeId;
   label: string;
   category: GraphCategory;
   importance: number;
@@ -50,12 +51,13 @@ export const graphPresentation: Record<GraphNodeId, GraphNodePresentation> = {
   projects: { x: 112, y: 326, depth: 0.66, category: "platform", importance: 0.62 },
 };
 
-export const graphNodes: readonly GraphNode[] = graphNodeIds.map((id) => {
+export const graphNodes: readonly GraphNode[] = graphNodeIds.map((id): GraphNode => {
   const item = knowledgeById[id];
   const presentation = graphPresentation[id];
 
   return {
     ...item,
+    id,
     label: item.title,
     category: presentation.category,
     importance: presentation.importance,
@@ -65,9 +67,13 @@ export const graphNodes: readonly GraphNode[] = graphNodeIds.map((id) => {
 const graphNodeIdSet = new Set<KnowledgeItemId>(graphNodeIds);
 const edgeKeys = new Set<string>();
 
+function isGraphNodeId(id: KnowledgeItemId): id is GraphNodeId {
+  return graphNodeIdSet.has(id);
+}
+
 export const graphEdges: readonly GraphEdge[] = graphNodeIds.flatMap((source) =>
   knowledgeById[source].relatedIds.flatMap((target) => {
-    if (!graphNodeIdSet.has(target)) return [];
+    if (!isGraphNodeId(target)) return [];
 
     const key = [source, target].sort().join(":");
     if (edgeKeys.has(key)) return [];
