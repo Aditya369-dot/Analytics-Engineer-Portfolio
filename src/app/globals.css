@@ -1,0 +1,153 @@
+@import "tailwindcss";
+
+:root {
+  --color-background: #07080d;
+  --color-background-elevated: #0c0e16;
+  --color-panel: #11141f;
+  --color-panel-muted: #0d1019;
+  --color-panel-border: #252a3b;
+  --color-text: #f5f7ff;
+  --color-text-muted: #9ba3b7;
+  --color-violet: #8b5cf6;
+  --color-violet-bright: #a78bfa;
+  --color-blue: #3b82f6;
+  --color-blue-bright: #60a5fa;
+  --color-cyan: #22d3ee;
+  --color-status: #34d399;
+  --color-focus: #67e8f9;
+  --page-gutter: clamp(1.25rem, 4vw, 4rem);
+  --page-max-width: 90rem;
+  --radius-panel: 1rem;
+}
+
+@theme inline {
+  --color-background: var(--color-background);
+  --color-background-elevated: var(--color-background-elevated);
+  --color-panel: var(--color-panel);
+  --color-panel-muted: var(--color-panel-muted);
+  --color-panel-border: var(--color-panel-border);
+  --color-foreground: var(--color-text);
+  --color-muted-foreground: var(--color-text-muted);
+  --color-accent-violet: var(--color-violet);
+  --color-accent-blue: var(--color-blue);
+  --color-accent-cyan: var(--color-cyan);
+  --color-status: var(--color-status);
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-space-grotesk);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  overflow-x: clip;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-text);
+  font-family: var(--font-inter), Arial, Helvetica, sans-serif;
+  line-height: 1.5;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-violet) 45%, transparent);
+  color: var(--color-text);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+.hero-ambient {
+  background:
+    linear-gradient(color-mix(in srgb, var(--color-panel-border) 20%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--color-panel-border) 20%, transparent) 1px, transparent 1px),
+    radial-gradient(circle at 52% 42%, color-mix(in srgb, var(--color-violet) 11%, transparent), transparent 32%),
+    radial-gradient(circle at 84% 58%, color-mix(in srgb, var(--color-blue) 9%, transparent), transparent 28%);
+  background-size: 4rem 4rem, 4rem 4rem, auto, auto;
+  mask-image: linear-gradient(to bottom, black, transparent 92%);
+}
+
+.hero-visual::before {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent 30%, color-mix(in srgb, var(--color-violet) 7%, transparent), transparent 70%);
+  content: "";
+}
+
+.hero-visual::after {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(color-mix(in srgb, var(--color-blue) 32%, transparent) 0.75px, transparent 0.75px);
+  background-size: 1rem 1rem;
+  content: "";
+  mask-image: radial-gradient(circle, black, transparent 70%);
+}
+
+.hero-orbit {
+  box-shadow: 0 0 4rem color-mix(in srgb, var(--color-violet) 12%, transparent);
+}
+
+.project-visual {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--color-panel-border) 24%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--color-panel-border) 24%, transparent) 1px, transparent 1px);
+  background-size: 2rem 2rem;
+}
+
+.career-grid {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--color-panel-border) 22%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--color-panel-border) 22%, transparent) 1px, transparent 1px);
+  background-size: 3rem 3rem;
+}
+
+.career-card {
+  bottom: calc(var(--career-level) + 1.5rem);
+}
+
+.career-node {
+  bottom: calc(var(--career-level) - 0.375rem);
+}
+
+.contact-panel::before {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--color-violet) 11%, transparent), transparent 45%),
+    radial-gradient(circle at 86% 10%, color-mix(in srgb, var(--color-blue) 18%, transparent), transparent 28%);
+  content: "";
+}
+
+.contact-panel::after {
+  position: absolute;
+  right: -3rem;
+  top: -6rem;
+  width: 20rem;
+  height: 20rem;
+  border: 1px solid color-mix(in srgb, var(--color-violet) 22%, transparent);
+  border-radius: 9999px;
+  content: "";
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
