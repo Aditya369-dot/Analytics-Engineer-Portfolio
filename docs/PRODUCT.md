@@ -65,6 +65,8 @@ Desktop layout = three visual zones:
 - Center: interactive knowledge graph
 - Right: digital twin
 
+This three-zone layout is the staged foundation for the final hero: one integrated **Intelligence Scene**. In that scene, the digital twin becomes the central focal point and the knowledge graph occupies the surrounding and background space. The positioning copy and primary actions must remain immediately understandable without requiring interaction or WebGL.
+
 Left content:
 - Eyebrow: `DATA × AI × ENGINEERING`
 - H1: `I BUILD INTELLIGENCE FROM COMPLEX DATA.`
@@ -114,6 +116,23 @@ Interaction:
 - cursor parallax
 - optional `INTERACT` control
 - should feel like a holographic technical scan, not a gaming avatar
+
+### Intelligence Scene
+The final hero unifies the digital twin and knowledge graph into one coherent spatial interface rather than presenting them as unrelated widgets.
+
+Core interaction loop:
+1. A visitor asks the digital twin a portfolio-related question using text.
+2. The system retrieves only relevant material from a curated, public portfolio knowledge base.
+3. The answer identifies its supporting sources and the graph concepts used to form it.
+4. Those concepts and their direct relationships illuminate while the answer is presented.
+5. When useful, the interface offers an explicit action to relevant project, career, architecture, or contact content.
+
+The experience must remain useful as a normal portfolio when AI, WebGL, or motion is unavailable. Voice input/output is a later enhancement. Realistic lip sync is optional and must not block the grounded text experience.
+
+### Portfolio knowledge base
+Answers must be grounded in a curated set of repository-owned, public portfolio content. Each entry retains a stable source identifier and optional route so answers can expose evidence and connect concepts to site content.
+
+Obsidian may later become an authoring and export source. It is not a browser or server runtime dependency, and the private vault must never be read by the deployed application. Only explicitly reviewed public exports may enter the knowledge base.
 
 ## Industry Projects
 Section title: `INDUSTRY PROJECTS`.
@@ -211,6 +230,9 @@ Include LinkedIn, email, GitHub.
 - Complex backend
 - Publishing private Obsidian content
 - Full 3D avatar creation pipeline
+- Voice interaction
+- Realistic lip sync
+- Unrestricted autonomous site navigation
 - Admin dashboard
 
 ## Success criteria
@@ -219,3 +241,5 @@ Include LinkedIn, email, GitHub.
 - Fast enough that 3D does not harm usability.
 - Mobile experience remains excellent.
 - Recruiters can reach projects/CV/contact without learning the interface.
+- Digital-twin answers are traceable to curated public portfolio sources.
+- Retrieved concepts connect each answer to the knowledge graph without obscuring core content.
