@@ -219,7 +219,6 @@ export function KnowledgeGraph({ className = "" }: KnowledgeGraphProps) {
         </div>
         <GraphNodeDetails
           node={selectedNode}
-          summary={graphPresentation[selectedId].summary}
           connections={selectedConnections}
         />
       </div>
