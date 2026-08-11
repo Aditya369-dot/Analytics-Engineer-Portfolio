@@ -37,12 +37,12 @@ export function Header() {
           AB<span className="text-accent-violet transition-colors group-hover:text-accent-cyan">.</span>
         </a>
 
-        <nav className="hidden items-center gap-7 lg:flex" aria-label="Primary navigation">
+        <nav className="hidden items-center gap-7 xl:flex" aria-label="Primary navigation">
           {portfolioNavigation.map((item) => (
             <a
               key={item.href}
               href={item.href}
-              className="font-display text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-foreground"
+              className="font-display text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-accent-cyan"
             >
               {item.label}
             </a>
@@ -60,7 +60,7 @@ export function Header() {
           <button
             ref={menuButtonRef}
             type="button"
-            className="inline-flex size-11 items-center justify-center rounded-lg border border-panel-border bg-panel text-foreground transition-colors hover:border-accent-blue lg:hidden"
+            className="inline-flex size-11 items-center justify-center rounded-lg border border-panel-border bg-panel text-foreground transition-colors hover:border-accent-cyan hover:text-accent-cyan xl:hidden"
             aria-expanded={isMenuOpen}
             aria-controls="mobile-navigation"
             aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"}
@@ -82,14 +82,14 @@ export function Header() {
 
         <div
           id="mobile-navigation"
-          className={`absolute inset-x-0 top-[calc(100%+0.75rem)] rounded-[var(--radius-panel)] border border-panel-border bg-background-elevated p-3 shadow-[0_16px_50px_rgba(0,0,0,0.35)] lg:hidden ${isMenuOpen ? "block" : "hidden"}`}
+          className={`absolute inset-x-0 top-[calc(100%+0.75rem)] rounded-[var(--radius-panel)] border border-panel-border bg-background-elevated p-3 shadow-[0_16px_50px_rgba(0,0,0,0.35)] sm:left-auto sm:w-96 xl:hidden ${isMenuOpen ? "block" : "hidden"}`}
         >
           <nav className="grid" aria-label="Mobile navigation">
             {portfolioNavigation.map((item) => (
               <a
                 key={item.href}
                 href={item.href}
-                className="rounded-lg px-4 py-3 font-display text-sm font-medium uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:bg-panel hover:text-foreground"
+                className="rounded-lg px-4 py-3 font-display text-sm font-medium uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:bg-panel hover:text-accent-cyan"
                 onClick={closeMenu}
               >
                 {item.label}

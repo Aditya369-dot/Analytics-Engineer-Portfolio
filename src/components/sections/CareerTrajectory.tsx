@@ -94,7 +94,7 @@ function MobileTrajectory() {
 
 export function CareerTrajectory() {
   return (
-    <section id="career" className="scroll-mt-24 border-y border-panel-border/50 bg-background-elevated py-20 sm:py-24">
+    <section id="career" className="scroll-mt-24 border-y border-panel-border/50 bg-background-elevated py-16 sm:py-20 lg:py-24">
       <Container>
         <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>

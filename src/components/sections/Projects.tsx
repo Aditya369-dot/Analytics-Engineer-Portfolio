@@ -4,26 +4,30 @@ import { SectionLabel } from "@/components/ui/SectionLabel";
 
 type Project = (typeof projects)[number];
 
-const accentStyles: Record<Project["accent"], { line: string; glow: string; text: string }> = {
+const accentStyles: Record<Project["accent"], { line: string; glow: string; text: string; border: string }> = {
   violet: {
     line: "border-accent-violet/60 bg-accent-violet",
     glow: "bg-accent-violet/15",
     text: "text-violet-300",
+    border: "hover:border-accent-violet/60",
   },
   blue: {
     line: "border-accent-blue/60 bg-accent-blue",
     glow: "bg-accent-blue/15",
     text: "text-blue-300",
+    border: "hover:border-accent-blue/60",
   },
   cyan: {
     line: "border-accent-cyan/60 bg-accent-cyan",
     glow: "bg-accent-cyan/15",
     text: "text-cyan-300",
+    border: "hover:border-accent-cyan/60",
   },
   magenta: {
     line: "border-fuchsia-400/60 bg-fuchsia-400",
     glow: "bg-fuchsia-400/15",
     text: "text-fuchsia-300",
+    border: "hover:border-fuchsia-400/60",
   },
 };
 
@@ -91,7 +95,7 @@ function ProjectCard({ project }: { project: Project }) {
   const accent = accentStyles[project.accent];
 
   return (
-    <article className="group flex min-w-0 flex-col overflow-hidden rounded-[var(--radius-panel)] border border-panel-border bg-panel transition-colors hover:border-accent-violet/50">
+    <article className={`group flex min-w-0 flex-col overflow-hidden rounded-[var(--radius-panel)] border border-panel-border bg-panel transition-[border-color,transform] duration-200 hover:-translate-y-1 ${accent.border}`}>
       <ProjectVisual project={project} />
       <div className="flex flex-1 flex-col p-5">
         <p className={`font-display text-xs font-semibold tracking-[0.18em] ${accent.text}`}>/{project.number}</p>
@@ -123,7 +127,7 @@ function ProjectCard({ project }: { project: Project }) {
 
 export function Projects() {
   return (
-    <section id="projects" className="scroll-mt-24 py-20 sm:py-24">
+    <section id="projects" className="scroll-mt-24 py-16 sm:py-20 lg:py-24">
       <Container>
         <div className="flex flex-col justify-between gap-4 border-b border-panel-border pb-7 sm:flex-row sm:items-end">
           <div>

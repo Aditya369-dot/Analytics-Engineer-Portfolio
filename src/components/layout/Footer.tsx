@@ -10,7 +10,7 @@ export function Footer() {
         </a>
         <nav className="flex flex-wrap gap-x-5 gap-y-2" aria-label="Footer navigation">
           {portfolioNavigation.map((item) => (
-            <a key={item.href} href={item.href} className="text-xs text-muted-foreground transition-colors hover:text-foreground">
+            <a key={item.href} href={item.href} className="text-xs text-muted-foreground transition-colors hover:text-accent-cyan">
               {item.label}
             </a>
           ))}

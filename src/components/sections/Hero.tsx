@@ -1,4 +1,5 @@
 import { heroContent, socialLinks } from "@/data/portfolio";
+import { KnowledgeGraph } from "@/components/hero/KnowledgeGraph";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { Container } from "@/components/ui/Container";
 import { SectionLabel } from "@/components/ui/SectionLabel";
@@ -74,12 +75,12 @@ function VisualPlaceholder({
 
 export function Hero() {
   return (
-    <section id="home" className="relative scroll-mt-18 overflow-hidden border-b border-panel-border/50 py-14 sm:py-18 lg:min-h-[calc(100svh-4.5rem)] lg:py-12">
+    <section id="home" className="relative scroll-mt-18 overflow-hidden border-b border-panel-border/50 py-12 sm:py-16 xl:py-16">
       <div className="hero-ambient pointer-events-none absolute inset-0" aria-hidden="true" />
-      <Container className="relative grid items-center gap-6 lg:grid-cols-[minmax(0,1.12fr)_minmax(17rem,0.9fr)_minmax(18rem,1fr)] xl:gap-8">
-        <div className="py-4 lg:pr-5">
+      <Container className="relative grid items-center gap-6 md:grid-cols-2 xl:grid-cols-[minmax(0,1.12fr)_minmax(17rem,0.9fr)_minmax(18rem,1fr)] xl:gap-8">
+        <div className="py-2 md:col-span-2 xl:col-span-1 xl:pr-5">
           <SectionLabel>{heroContent.eyebrow}</SectionLabel>
-          <h1 className="mt-5 max-w-3xl font-display text-[clamp(2.75rem,7vw,5.5rem)] font-semibold uppercase leading-[0.92] tracking-[-0.055em] text-foreground lg:text-[clamp(3.25rem,5vw,5rem)]">
+          <h1 className="mt-5 max-w-3xl font-display text-[clamp(2.75rem,7vw,5.5rem)] font-semibold uppercase leading-[0.92] tracking-[-0.055em] text-foreground xl:text-[clamp(3.25rem,5vw,5rem)]">
             {heroContent.titleLead}{" "}
             <span className="text-accent-violet">{heroContent.titleAccent}</span>
           </h1>
@@ -110,7 +111,7 @@ export function Hero() {
                 <a
                   key={social.label}
                   href={social.href}
-                  className="grid size-9 place-items-center rounded-lg border border-panel-border bg-panel-muted text-muted-foreground transition-colors hover:border-accent-blue hover:text-foreground"
+                  className="grid size-9 place-items-center rounded-lg border border-panel-border bg-panel-muted text-muted-foreground transition-colors hover:border-accent-cyan hover:text-accent-cyan"
                   aria-label={social.label}
                 >
                   <SocialIcon icon={social.icon} />
@@ -120,17 +121,12 @@ export function Hero() {
           </div>
         </div>
 
-        <VisualPlaceholder
-          index="SYS / 01"
-          label="Graph offline"
-          title="Knowledge graph"
-          className="lg:min-h-[30rem]"
-        />
+        <KnowledgeGraph className="md:min-h-[28rem] xl:min-h-[30rem]" />
         <VisualPlaceholder
           index="SYS / 02"
           label="Asset pending"
           title="Digital twin"
-          className="min-h-64 sm:min-h-80 lg:min-h-[34rem]"
+          className="min-h-64 sm:min-h-80 md:min-h-[28rem] xl:min-h-[34rem]"
         />
       </Container>
     </section>

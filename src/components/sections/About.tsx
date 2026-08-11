@@ -4,7 +4,7 @@ import { SectionLabel } from "@/components/ui/SectionLabel";
 
 export function About() {
   return (
-    <section id="about" className="scroll-mt-24 py-20 sm:py-24">
+    <section id="about" className="scroll-mt-24 py-16 sm:py-20 lg:py-24">
       <Container>
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(20rem,0.95fr)] lg:gap-16">
           <div>
@@ -41,7 +41,7 @@ export function About() {
           ))}
         </dl>
 
-        <div id="tech-stack" className="scroll-mt-24 pt-20 sm:pt-24">
+        <div id="tech-stack" className="scroll-mt-24 pt-16 sm:pt-20">
           <div className="grid gap-8 border-t border-panel-border pt-8 lg:grid-cols-[0.7fr_1.3fr]">
             <div>
               <SectionLabel>Technical toolkit</SectionLabel>
