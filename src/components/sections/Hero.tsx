@@ -1,13 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { heroContent, socialLinks } from "@/data/portfolio";
 import { DigitalTwin } from "@/components/hero/DigitalTwin";
-import { KnowledgeGraph } from "@/components/hero/KnowledgeGraph";
+import { KnowledgeGraph3D } from "@/components/hero/KnowledgeGraph3D";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { Container } from "@/components/ui/Container";
 import { SectionLabel } from "@/components/ui/SectionLabel";
-import type { KnowledgeItemId } from "@/data/knowledge";
+import {
+  emptyGraphFocus,
+  graphFocusFromKnowledgeIds,
+  graphNeighborhood,
+  type GraphFocus,
+  type GraphNodeId,
+} from "@/data/graph-data";
 
 type SocialIconProps = {
   icon: (typeof socialLinks)[number]["icon"];
@@ -39,35 +45,71 @@ function SocialIcon({ icon }: SocialIconProps) {
 }
 
 export function Hero() {
-  const [retrievedNodeIds, setRetrievedNodeIds] = useState<readonly KnowledgeItemId[]>([]);
-  const [relatedNodeIds, setRelatedNodeIds] = useState<readonly KnowledgeItemId[]>([]);
+  const [activeFocus, setActiveFocus] = useState<GraphFocus>(emptyGraphFocus);
+  const activeAiRequest = useRef(0);
+  const manualOverride = useRef(false);
+  const titleWords = heroContent.titleLead.split(" ");
+
+  const clearFocus = useCallback(() => {
+    manualOverride.current = true;
+    setActiveFocus(emptyGraphFocus);
+  }, []);
+  const selectNode = useCallback((nodeId: GraphNodeId) => {
+    manualOverride.current = true;
+    setActiveFocus({
+      source: "manual",
+      primaryNodeIds: [nodeId],
+      relatedNodeIds: graphNeighborhood(nodeId),
+    });
+  }, []);
+  const startAiQuestion = useCallback((requestId: number) => {
+    activeAiRequest.current = requestId;
+    manualOverride.current = false;
+    setActiveFocus(emptyGraphFocus);
+  }, []);
+  const applyAiFocus = useCallback((nodeIds: Parameters<typeof graphFocusFromKnowledgeIds>[0], relatedIds: Parameters<typeof graphFocusFromKnowledgeIds>[1], requestId: number) => {
+    if (requestId !== activeAiRequest.current || manualOverride.current) return;
+    setActiveFocus(graphFocusFromKnowledgeIds(nodeIds, relatedIds));
+  }, []);
 
   return (
-    <section id="home" className="relative scroll-mt-18 overflow-hidden border-b border-panel-border/50 py-12 sm:py-16 xl:py-16">
+    <section id="home" className="relative scroll-mt-18 overflow-hidden border-b border-panel-border/50 py-10 sm:py-12 xl:min-h-[44rem] xl:py-8">
       <div className="hero-ambient pointer-events-none absolute inset-0" aria-hidden="true" />
-      <Container className="relative grid items-center gap-6 md:grid-cols-2 xl:grid-cols-[minmax(0,1.12fr)_minmax(17rem,0.9fr)_minmax(18rem,1fr)] xl:gap-8">
-        <div className="py-2 md:col-span-2 xl:col-span-1 xl:pr-5">
-          <SectionLabel>{heroContent.eyebrow}</SectionLabel>
-          <h1 className="mt-5 max-w-3xl font-display text-[clamp(2.75rem,7vw,5.5rem)] font-semibold uppercase leading-[0.92] tracking-[-0.055em] text-foreground xl:text-[clamp(3.25rem,5vw,5rem)]">
-            {heroContent.titleLead}{" "}
-            <span className="text-accent-violet">{heroContent.titleAccent}</span>
+      <Container className="relative grid items-center gap-6 md:grid-cols-2 xl:min-h-[40rem] xl:grid-cols-[minmax(0,0.9fr)_minmax(13rem,0.9fr)_minmax(17.5rem,0.56fr)] xl:gap-4">
+        <KnowledgeGraph3D
+          integrated
+          className="order-2 min-h-[24rem] md:col-span-2 xl:absolute xl:inset-y-[-1rem] xl:left-[20%] xl:right-[17%] xl:min-h-0"
+          focus={activeFocus}
+          onNodeSelect={selectNode}
+          onFocusClear={clearFocus}
+        />
+
+        <div className="relative z-20 order-1 py-2 md:col-span-2 xl:col-span-1 xl:pr-4">
+          <div className="pointer-events-none absolute -inset-x-8 -inset-y-10 -z-10 hidden bg-[radial-gradient(ellipse_at_left,rgba(7,8,13,.98)_35%,rgba(7,8,13,.78)_62%,transparent_82%)] xl:block" aria-hidden="true" />
+          <SectionLabel className="text-[0.625rem]">{heroContent.eyebrow}</SectionLabel>
+          <h1 className="mt-4 max-w-xl font-display text-[clamp(2.55rem,10vw,4.25rem)] font-semibold uppercase leading-[0.88] tracking-[-0.055em] text-foreground xl:text-[clamp(3.5rem,4vw,4.25rem)]">
+            <span className="block">{titleWords.slice(0, 2).join(" ")}</span>
+            <span className="block">{titleWords[2]}</span>
+            <span className="block">{titleWords[3]}</span>
+            <span className="block text-accent-violet">{heroContent.titleAccent.split(" ")[0]}</span>
+            <span className="block text-accent-violet">{heroContent.titleAccent.split(" ").slice(1).join(" ")}</span>
           </h1>
-          <p className="mt-6 max-w-xl text-base leading-7 text-muted-foreground sm:text-lg">
+          <p className="mt-5 max-w-[29rem] text-sm leading-6 text-muted-foreground sm:text-base">
             {heroContent.description}
           </p>
 
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <ButtonLink href={heroContent.actions.primary.href}>
+          <div className="mt-6 flex flex-col gap-2.5 sm:flex-row">
+            <ButtonLink className="min-h-10 px-4 py-2 text-xs" href={heroContent.actions.primary.href}>
               {heroContent.actions.primary.label}
               <span className="ml-2" aria-hidden="true">↗</span>
             </ButtonLink>
-            <ButtonLink href={heroContent.actions.secondary.href} variant="secondary">
+            <ButtonLink className="min-h-10 px-4 py-2 text-xs" href={heroContent.actions.secondary.href} variant="secondary">
               {heroContent.actions.secondary.label}
             </ButtonLink>
           </div>
 
-          <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-4 border-t border-panel-border/70 pt-5">
-            <p className="flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-3 border-t border-panel-border/70 pt-4">
+            <p className="flex items-center gap-2 text-[0.6875rem] text-muted-foreground">
               <span className="relative flex size-2" aria-hidden="true">
                 <span className="absolute inline-flex size-full rounded-full bg-status opacity-40" />
                 <span className="relative inline-flex size-2 rounded-full bg-status" />
@@ -79,7 +121,7 @@ export function Hero() {
                 <a
                   key={social.label}
                   href={social.href}
-                  className="grid size-9 place-items-center rounded-lg border border-panel-border bg-panel-muted text-muted-foreground transition-colors hover:border-accent-cyan hover:text-accent-cyan"
+                  className="grid size-8 place-items-center rounded-lg border border-panel-border bg-panel-muted text-muted-foreground transition-colors hover:border-accent-cyan hover:text-accent-cyan"
                   aria-label={social.label}
                 >
                   <SocialIcon icon={social.icon} />
@@ -89,17 +131,10 @@ export function Hero() {
           </div>
         </div>
 
-        <KnowledgeGraph
-          className="md:min-h-[28rem] xl:min-h-[30rem]"
-          illuminatedNodeIds={retrievedNodeIds}
-          relatedIlluminatedNodeIds={relatedNodeIds}
-        />
         <DigitalTwin
-          className="min-h-64 sm:min-h-80 md:min-h-[28rem] xl:min-h-[34rem]"
-          onGraphResponse={(nodeIds, relatedIds) => {
-            setRetrievedNodeIds(nodeIds);
-            setRelatedNodeIds(relatedIds);
-          }}
+          className="relative z-30 order-3 min-h-60 bg-background-elevated/82 shadow-[0_0_42px_rgba(7,8,13,.7),0_0_22px_rgba(139,92,246,.08)] backdrop-blur-md sm:min-h-72 md:min-h-[23rem] xl:col-start-3 xl:min-h-[27rem] xl:w-[18rem] xl:justify-self-end"
+          onQuestionStart={startAiQuestion}
+          onGraphResponse={applyAiFocus}
         />
       </Container>
     </section>

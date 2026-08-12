@@ -5,37 +5,44 @@ import {
   graphEdges,
   graphNodes,
   graphPresentation,
+  type GraphFocus,
   type GraphNodeId,
 } from "@/data/graph-data";
 import { GraphNodeDetails } from "@/components/hero/GraphNodeDetails";
-import type { KnowledgeItemId } from "@/data/knowledge";
 
 type KnowledgeGraphProps = {
   className?: string;
-  illuminatedNodeIds?: readonly KnowledgeItemId[];
-  relatedIlluminatedNodeIds?: readonly KnowledgeItemId[];
+  integrated?: boolean;
+  focus: GraphFocus;
+  onNodeSelect: (nodeId: GraphNodeId) => void;
+  onFocusClear: () => void;
 };
 
 const categoryStyles = {
+  entity: { fill: "fill-accent-violet-bright", ring: "stroke-accent-violet-bright" },
+  discipline: { fill: "fill-accent-violet", ring: "stroke-accent-violet-bright" },
   core: { fill: "fill-accent-violet-bright", ring: "stroke-accent-violet-bright" },
   data: { fill: "fill-accent-blue-bright", ring: "stroke-accent-blue-bright" },
   analytics: { fill: "fill-accent-cyan", ring: "stroke-accent-cyan" },
   ai: { fill: "fill-accent-violet", ring: "stroke-accent-violet" },
   platform: { fill: "fill-accent-cyan", ring: "stroke-accent-cyan" },
   tool: { fill: "fill-accent-blue", ring: "stroke-accent-blue" },
+  project: { fill: "fill-accent-cyan", ring: "stroke-accent-cyan" },
 } as const;
 
 export function KnowledgeGraph({
   className = "",
-  illuminatedNodeIds = [],
-  relatedIlluminatedNodeIds = [],
+  integrated = false,
+  focus,
+  onNodeSelect,
+  onFocusClear,
 }: KnowledgeGraphProps) {
-  const [selectedId, setSelectedId] = useState<GraphNodeId>("analytics-engineering");
   const [hoveredId, setHoveredId] = useState<GraphNodeId | null>(null);
   const [rotation, setRotation] = useState(0);
   const [parallax, setParallax] = useState({ x: 0, y: 0 });
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-  const dragState = useRef<{ pointerId: number; startX: number; startRotation: number } | null>(null);
+  const dragState = useRef<{ pointerId: number; startX: number; startRotation: number; moved: boolean } | null>(null);
+  const didDrag = useRef(false);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -46,18 +53,21 @@ export function KnowledgeGraph({
     return () => mediaQuery.removeEventListener("change", updatePreference);
   }, []);
 
-  const focusedId = hoveredId ?? selectedId;
+  const selectedId = focus.source === "manual" ? focus.primaryNodeIds[0] ?? null : null;
+  const focusedId = hoveredId ?? focus.primaryNodeIds[0] ?? null;
   const illuminatedIds = useMemo(
-    () => new Set<KnowledgeItemId>(illuminatedNodeIds),
-    [illuminatedNodeIds],
+    () => new Set<string>(focus.primaryNodeIds),
+    [focus.primaryNodeIds],
   );
   const relatedIlluminatedIds = useMemo(
-    () => new Set<KnowledgeItemId>(relatedIlluminatedNodeIds),
-    [relatedIlluminatedNodeIds],
+    () => new Set<string>(focus.relatedNodeIds),
+    [focus.relatedNodeIds],
   );
   const hasResponseHighlight = illuminatedIds.size > 0 || relatedIlluminatedIds.size > 0;
   const connectedIds = useMemo(() => {
-    const ids = new Set<GraphNodeId>([focusedId]);
+    const ids = new Set<GraphNodeId>();
+    if (!focusedId) return ids;
+    ids.add(focusedId);
 
     graphEdges.forEach((edge) => {
       if (edge.source === focusedId) ids.add(edge.target);
@@ -67,14 +77,14 @@ export function KnowledgeGraph({
     return ids;
   }, [focusedId]);
 
-  const selectedNode = graphNodes.find((node) => node.id === selectedId) ?? graphNodes[0];
+  const selectedNode = graphNodes.find((node) => node.id === selectedId) ?? null;
   const selectedConnections = graphEdges
-    .filter((edge) => edge.source === selectedId || edge.target === selectedId)
+    .filter((edge) => selectedId !== null && (edge.source === selectedId || edge.target === selectedId))
     .map((edge) => (edge.source === selectedId ? edge.target : edge.source))
     .map((id) => graphNodes.find((node) => node.id === id)?.label)
     .filter((label) => label !== undefined);
 
-  const selectNode = (id: GraphNodeId) => setSelectedId(id);
+  const selectNode = (id: GraphNodeId) => onNodeSelect(id);
 
   const handlePointerDown = (event: React.PointerEvent<SVGSVGElement>) => {
     if (event.pointerType === "touch") return;
@@ -82,7 +92,9 @@ export function KnowledgeGraph({
       pointerId: event.pointerId,
       startX: event.clientX,
       startRotation: rotation,
+      moved: false,
     };
+    didDrag.current = false;
     event.currentTarget.setPointerCapture(event.pointerId);
   };
 
@@ -90,6 +102,7 @@ export function KnowledgeGraph({
     const rect = event.currentTarget.getBoundingClientRect();
 
     if (dragState.current?.pointerId === event.pointerId) {
+      if (Math.abs(event.clientX - dragState.current.startX) >= 5) dragState.current.moved = true;
       setRotation(dragState.current.startRotation + (event.clientX - dragState.current.startX) * 0.08);
       return;
     }
@@ -103,30 +116,36 @@ export function KnowledgeGraph({
 
   const endDrag = (event: React.PointerEvent<SVGSVGElement>) => {
     if (dragState.current?.pointerId === event.pointerId) {
+      didDrag.current = dragState.current.moved;
       dragState.current = null;
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
   };
 
   return (
-    <div className={`graph-shell relative isolate min-h-80 overflow-hidden rounded-[var(--radius-panel)] border border-panel-border bg-panel-muted ${className}`}>
-      <div className="absolute inset-x-4 top-4 z-20 flex items-center justify-between font-display text-[0.5625rem] uppercase tracking-[0.18em] text-muted-foreground">
+    <div className={`${integrated ? "hero-graph-scene relative isolate min-h-80 overflow-hidden" : "graph-shell relative isolate min-h-80 overflow-hidden rounded-[var(--radius-panel)] border border-panel-border bg-panel-muted"} ${className}`}>
+      {!integrated && <div className="absolute inset-x-4 top-4 z-20 flex items-center justify-between font-display text-[0.5625rem] uppercase tracking-[0.18em] text-muted-foreground">
         <span>SYS / 01</span>
         <span className="flex items-center gap-2 text-accent-cyan">
           <span className="size-1.5 rounded-full bg-accent-cyan shadow-[0_0_10px_var(--color-cyan)]" />
           Graph online
         </span>
-      </div>
+      </div>}
 
       <svg
         viewBox="0 0 400 360"
-        className="absolute inset-x-0 top-10 h-[calc(100%-10.5rem)] w-full touch-none select-none overflow-visible active:cursor-grabbing sm:cursor-grab"
+        className={`absolute inset-x-0 w-full touch-none select-none overflow-visible active:cursor-grabbing sm:cursor-grab ${integrated ? "inset-y-0 h-full" : "top-10 h-[calc(100%-10.5rem)]"}`}
         role="group"
         aria-label="Interactive knowledge graph. Drag to rotate and select a node for details."
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={endDrag}
         onPointerCancel={endDrag}
+        onClick={(event) => {
+          const target = event.target as Element;
+          if (!target.closest("[data-graph-node]") && !didDrag.current) onFocusClear();
+          didDrag.current = false;
+        }}
         onPointerLeave={() => {
           if (!dragState.current) setParallax({ x: 0, y: 0 });
           setHoveredId(null);
@@ -223,9 +242,14 @@ export function KnowledgeGraph({
                   aria-label={`View ${node.label} details`}
                   aria-pressed={isSelected}
                   className={`group/node outline-none ${transitionClass} ${nodeOpacity}`}
+                  data-graph-node={node.id}
                   onPointerEnter={() => setHoveredId(node.id)}
                   onPointerLeave={() => setHoveredId(null)}
-                  onClick={() => selectNode(node.id)}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    if (!didDrag.current) selectNode(node.id);
+                    didDrag.current = false;
+                  }}
                   onKeyDown={(event) => {
                     if (event.key === "Enter" || event.key === " ") {
                       event.preventDefault();
@@ -252,9 +276,12 @@ export function KnowledgeGraph({
                     x={position.x}
                     y={position.y - radius - 8}
                     textAnchor="middle"
-                    className={`pointer-events-none fill-current font-display uppercase tracking-[0.08em] ${prefersReducedMotion ? "transition-none" : "transition-colors duration-300"} ${isFocused || isSelected || isResponseStrong ? "text-foreground" : isResponseRelated ? "text-accent-cyan" : "text-muted-foreground"}`}
-                    fontSize={node.id === "analytics-engineering" ? 11 : 9.5}
-                    fontWeight={isFocused || isSelected ? 650 : 500}
+                    stroke="rgba(7,9,18,.96)"
+                    strokeWidth={isFocused || isSelected ? 4 : 3}
+                    paintOrder="stroke fill"
+                    className={`pointer-events-none fill-current font-display uppercase tracking-[0.06em] ${node.importance < 0.68 && !isFocused && !isSelected ? "hidden sm:block" : ""} ${prefersReducedMotion ? "transition-none" : "transition-[color,opacity] duration-300"} ${isFocused || isSelected || isResponseStrong ? "text-foreground" : isResponseRelated ? "text-accent-cyan" : "text-slate-300"}`}
+                    fontSize={node.id === "analytics-engineering" ? 13 : node.importance >= 0.78 ? 11.5 : 10.5}
+                    fontWeight={isFocused || isSelected ? 700 : 600}
                   >
                     {node.label}
                   </text>
@@ -265,17 +292,16 @@ export function KnowledgeGraph({
         </g>
       </svg>
 
-      <div className="absolute inset-x-0 bottom-0 z-20">
-        <div className="flex items-center justify-between px-4 pb-2 font-display text-[0.5rem] uppercase tracking-[0.14em] text-muted-foreground">
+      {(!integrated || selectedNode) && <div className={`${integrated ? "pointer-events-none absolute bottom-4 left-1/2 z-20 w-[min(25rem,90%)] -translate-x-1/2" : "absolute inset-x-0 bottom-0 z-20"}`}>
+        {!integrated && <div className="flex items-center justify-between px-4 pb-2 font-display text-[0.5rem] uppercase tracking-[0.14em] text-muted-foreground">
           <span className="hidden sm:inline">Drag to rotate · Select a node</span>
           <span className="sm:hidden">Tap a node</span>
           <span>{graphNodes.length} nodes / {graphEdges.length} links</span>
+        </div>}
+        <div className={integrated ? "pointer-events-auto overflow-hidden rounded-xl border border-panel-border/70 shadow-[0_0_32px_rgba(7,8,13,.8)]" : ""}>
+          <GraphNodeDetails node={selectedNode} connections={selectedConnections} />
         </div>
-        <GraphNodeDetails
-          node={selectedNode}
-          connections={selectedConnections}
-        />
-      </div>
+      </div>}
     </div>
   );
 }

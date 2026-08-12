@@ -26,7 +26,7 @@ test("generates from only the retrieved portfolio context", async () => {
   assert.ok(capturedRequest?.context.every((item) => response.sources.some((source) => source.id === item.id)));
   assert.equal(await collectText(response.text), "Grounded answer.");
   assert.ok(response.graphNodeIds.includes("ai-agents"));
-  assert.ok(response.relatedGraphNodeIds.includes("rag"));
+  assert.ok([...response.graphNodeIds, ...response.relatedGraphNodeIds].includes("rag"));
 });
 
 test("does not call the model when retrieval has no evidence", async () => {

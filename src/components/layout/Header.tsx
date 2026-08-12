@@ -27,7 +27,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-panel-border/80 bg-background/90 backdrop-blur-md">
-      <Container className="relative flex min-h-18 items-center justify-between gap-6">
+      <Container className="relative flex min-h-16 items-center justify-between gap-5">
         <a
           href="#home"
           className="group inline-flex items-baseline font-display text-xl font-bold tracking-[-0.05em] text-foreground"
@@ -37,12 +37,12 @@ export function Header() {
           AB<span className="text-accent-violet transition-colors group-hover:text-accent-cyan">.</span>
         </a>
 
-        <nav className="hidden items-center gap-7 xl:flex" aria-label="Primary navigation">
+        <nav className="hidden items-center gap-6 xl:flex" aria-label="Primary navigation">
           {portfolioNavigation.map((item) => (
             <a
               key={item.href}
               href={item.href}
-              className="font-display text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-accent-cyan"
+              className="font-display text-[0.6875rem] font-medium uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-accent-cyan"
             >
               {item.label}
             </a>
@@ -52,7 +52,7 @@ export function Header() {
         <div className="flex items-center gap-3">
           <ButtonLink
             href={portfolioLinks.cv}
-            className="hidden min-h-10 px-4 py-2 text-xs sm:inline-flex"
+            className="hidden min-h-9 px-3.5 py-1.5 text-[0.6875rem] sm:inline-flex"
           >
             Download CV
           </ButtonLink>

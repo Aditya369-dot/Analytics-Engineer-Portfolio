@@ -24,11 +24,9 @@ export type TwinChatStreamEvent =
   | { type: "done" }
   | { type: "error"; code: TwinChatErrorCode; message: string };
 
-export type DigitalTwinMessage = {
+export type DigitalTwinNarration = {
   id: string;
-  role: "user" | "assistant";
   content: string;
-  sources?: readonly TwinChatSource[];
-  graphNodeIds?: readonly KnowledgeItemId[];
-  relatedGraphNodeIds?: readonly KnowledgeItemId[];
+  sources: readonly TwinChatSource[];
+  status: "streaming" | "complete" | "error";
 };

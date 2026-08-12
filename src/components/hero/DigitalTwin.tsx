@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { DigitalTwinComposer } from "@/components/hero/DigitalTwinComposer";
 import { DigitalTwinConversation } from "@/components/hero/DigitalTwinConversation";
+import { DigitalTwinNarration } from "@/components/hero/DigitalTwinNarration";
 import {
   suggestedTwinQuestions,
 } from "@/data/digital-twin-chat";
 import { askDigitalTwin, TwinChatClientError } from "@/lib/twin-chat-client";
-import type { DigitalTwinMessage } from "@/types/digital-twin-chat";
+import type { DigitalTwinNarration as DigitalTwinNarrationState } from "@/types/digital-twin-chat";
 import type { KnowledgeItemId } from "@/data/knowledge";
 
 export type DigitalTwinProps = {
@@ -15,52 +16,42 @@ export type DigitalTwinProps = {
   onGraphResponse?: (
     nodeIds: readonly KnowledgeItemId[],
     relatedNodeIds: readonly KnowledgeItemId[],
+    requestId: number,
   ) => void;
+  onQuestionStart?: (requestId: number) => void;
 };
 
-export function DigitalTwin({ className = "", onGraphResponse }: DigitalTwinProps) {
+export function DigitalTwin({ className = "", onGraphResponse, onQuestionStart }: DigitalTwinProps) {
   const [question, setQuestion] = useState("");
-  const [messages, setMessages] = useState<DigitalTwinMessage[]>([]);
+  const [narration, setNarration] = useState<DigitalTwinNarrationState | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const requestCounter = useRef(0);
 
   const submitQuestion = async (nextQuestion = question) => {
     const normalizedQuestion = nextQuestion.trim();
     if (!normalizedQuestion || isLoading) return;
 
-    const userMessage: DigitalTwinMessage = {
-      id: `user-${Date.now()}`,
-      role: "user",
-      content: normalizedQuestion,
-    };
-
-    setMessages((current) => [...current, userMessage]);
+    const requestId = ++requestCounter.current;
+    const narrationId = `narration-${requestId}`;
     setQuestion("");
     setIsLoading(true);
-    onGraphResponse?.([], []);
-    const assistantId = `assistant-${Date.now()}`;
+    setNarration({ id: narrationId, content: "", sources: [], status: "streaming" });
+    onQuestionStart?.(requestId);
 
     try {
       await askDigitalTwin(normalizedQuestion, {
         onMetadata: (metadata) => {
-          setMessages((current) => [
-            ...current,
-            {
-              id: assistantId,
-              role: "assistant",
-              content: "",
-              sources: metadata.sources,
-              graphNodeIds: metadata.graphNodeIds,
-              relatedGraphNodeIds: metadata.relatedGraphNodeIds,
-            },
-          ]);
-          onGraphResponse?.(metadata.graphNodeIds, metadata.relatedGraphNodeIds);
+          if (requestCounter.current !== requestId) return;
+          setNarration((current) => current?.id === narrationId
+            ? { ...current, sources: metadata.sources }
+            : current);
+          onGraphResponse?.(metadata.graphNodeIds, metadata.relatedGraphNodeIds, requestId);
         },
         onDelta: (text) => {
-          setMessages((current) => current.map((message) =>
-            message.id === assistantId
-              ? { ...message, content: message.content + text }
-              : message,
-          ));
+          if (requestCounter.current !== requestId) return;
+          setNarration((current) => current?.id === narrationId
+            ? { ...current, content: current.content + text }
+            : current);
         },
       });
     } catch (error) {
@@ -70,39 +61,40 @@ export function DigitalTwin({ className = "", onGraphResponse }: DigitalTwinProp
           ? "The AI answer service is not configured yet."
           : "The AI answer service is temporarily unavailable. Please try again.";
 
-      setMessages((current) => {
-        const hasAssistantMessage = current.some((message) => message.id === assistantId);
-        if (hasAssistantMessage) {
-          return current.map((message) =>
-            message.id === assistantId && !message.content
-              ? { ...message, content: errorMessage }
-              : message.id === assistantId
-                ? { ...message, content: `${message.content} The answer stream was interrupted.` }
-                : message,
-          );
-        }
-        return [...current, { id: assistantId, role: "assistant", content: errorMessage }];
-      });
+      setNarration((current) => current?.id === narrationId
+        ? {
+            ...current,
+            content: current.content ? `${current.content} The answer stream was interrupted.` : errorMessage,
+            status: "error",
+          }
+        : current);
     } finally {
-      setIsLoading(false);
+      if (requestCounter.current === requestId) {
+        setIsLoading(false);
+        setNarration((current) => current?.id === narrationId && current.status === "streaming"
+          ? { ...current, status: "complete" }
+          : current);
+      }
     }
   };
 
   const clearConversation = () => {
-    setMessages([]);
+    requestCounter.current += 1;
+    setNarration(null);
     setQuestion("");
-    onGraphResponse?.([], []);
+    setIsLoading(false);
+    onQuestionStart?.(requestCounter.current);
   };
 
   return (
     <section
-      className={`twin-shell relative isolate flex min-h-64 flex-col overflow-hidden rounded-[var(--radius-panel)] border border-panel-border bg-panel-muted ${className}`}
+      className={`twin-shell relative isolate flex min-h-60 flex-col overflow-hidden rounded-[var(--radius-panel)] border border-panel-border/80 bg-panel-muted ${className}`}
       aria-label="Digital twin conversation preview"
     >
-      <header className="flex items-center justify-between gap-3 border-b border-panel-border/70 px-4 py-3 font-display text-[0.5625rem] uppercase tracking-[0.18em] text-muted-foreground">
+      <header className="flex items-center justify-between gap-2 border-b border-panel-border/60 px-3 py-2 font-display text-[0.4375rem] uppercase tracking-[0.15em] text-muted-foreground">
         <span>SYS / 02</span>
-        <div className="flex items-center gap-3">
-          {messages.length > 0 && (
+        <div className="flex items-center gap-2">
+          {narration && (
             <button
               type="button"
               className="transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-cyan"
@@ -120,12 +112,13 @@ export function DigitalTwin({ className = "", onGraphResponse }: DigitalTwinProp
 
       <div className="min-h-0 flex-1">
         <DigitalTwinConversation
-          messages={messages}
           isLoading={isLoading}
           suggestions={suggestedTwinQuestions}
           onSelectSuggestion={submitQuestion}
         />
       </div>
+
+      <DigitalTwinNarration narration={narration} />
 
       <DigitalTwinComposer
         value={question}

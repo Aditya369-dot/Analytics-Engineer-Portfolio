@@ -89,6 +89,43 @@ body {
   background-size: 2rem 2rem, 2rem 2rem, auto;
 }
 
+.hero-graph-scene {
+  background:
+    radial-gradient(circle at 58% 48%, color-mix(in srgb, var(--color-violet) 16%, transparent), transparent 26%),
+    radial-gradient(circle at 42% 44%, color-mix(in srgb, var(--color-blue) 9%, transparent), transparent 45%);
+  mask-image: linear-gradient(90deg, transparent 0%, black 12%, black 88%, transparent 100%);
+}
+
+.hero-graph-scene::after {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background:
+    linear-gradient(90deg, rgba(7, 8, 13, 0.48), transparent 18%, transparent 80%, rgba(7, 8, 13, 0.25)),
+    linear-gradient(0deg, rgba(7, 8, 13, 0.5), transparent 17%, transparent 86%, rgba(7, 8, 13, 0.3));
+  content: "";
+  pointer-events: none;
+}
+
+.hero-neural-canvas canvas {
+  filter: saturate(1.18) contrast(1.08);
+}
+
+.neural-field-shell::before {
+  position: absolute;
+  z-index: 1;
+  inset: 8% 5% 12%;
+  border: 1px solid color-mix(in srgb, var(--color-violet) 9%, transparent);
+  border-radius: 48% 52% 45% 55%;
+  background:
+    radial-gradient(ellipse at 34% 48%, color-mix(in srgb, var(--color-violet) 8%, transparent), transparent 52%),
+    radial-gradient(ellipse at 68% 52%, color-mix(in srgb, var(--color-blue) 8%, transparent), transparent 52%);
+  filter: blur(1px);
+  opacity: 0.7;
+  content: "";
+  pointer-events: none;
+}
+
 .twin-shell {
   background-image:
     linear-gradient(color-mix(in srgb, var(--color-panel-border) 18%, transparent) 1px, transparent 1px),
