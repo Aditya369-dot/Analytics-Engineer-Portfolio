@@ -4,21 +4,28 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "npm run knowledge:build",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "knowledge:build": "node --experimental-strip-types scripts/knowledge/build.ts",
+    "knowledge:validate": "node --experimental-strip-types scripts/knowledge/validate.ts",
+    "knowledge:test": "node --test --experimental-strip-types scripts/knowledge/core.test.ts"
   },
   "dependencies": {
+    "@react-three/fiber": "^9.7.0",
     "next": "latest",
     "react": "latest",
-    "react-dom": "latest"
+    "react-dom": "latest",
+    "three": "^0.185.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "latest",
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
+    "@types/three": "^0.185.4",
     "eslint": "latest",
     "eslint-config-next": "latest",
     "tailwindcss": "latest",

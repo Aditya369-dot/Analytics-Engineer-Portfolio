@@ -27,6 +27,13 @@ export const heroContent = {
   },
 } as const;
 
+export const digitalTwinContent = {
+  title: "Digital Twin",
+  status: "Placeholder mode",
+  description: "Abstract render · Replaceable asset",
+  traits: ["Data Thinker", "System Builder", "Problem Solver"],
+} as const;
+
 export const socialLinks = [
   { label: "LinkedIn", href: portfolioLinks.linkedin, icon: "linkedin" },
   { label: "GitHub", href: portfolioLinks.github, icon: "github" },

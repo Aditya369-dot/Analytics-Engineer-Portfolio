@@ -20,7 +20,7 @@ export function DigitalTwinConversation({
           Ask my digital twin
         </p>
         <p className="mt-2 text-xs leading-5 text-muted-foreground">
-          Preview the conversational interface with a suggested question.
+          Answers are generated from curated portfolio evidence only.
         </p>
         <div className="mt-4 grid gap-2">
           {suggestions.map((question) => (
@@ -50,7 +50,7 @@ export function DigitalTwinConversation({
           }`}
         >
           <span className="mb-1 block font-display text-[0.5rem] uppercase tracking-[0.14em] text-accent-cyan">
-            {message.role === "user" ? "You" : "Digital twin · Preview"}
+            {message.role === "user" ? "You" : "Digital twin · Grounded"}
           </span>
           {message.content}
           {message.role === "assistant" && message.sources && message.sources.length > 0 && (

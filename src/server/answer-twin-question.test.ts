@@ -1,22 +1,42 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { answerTwinQuestion } from "./answer-twin-question.ts";
+import {
+  answerQuestion,
+  type GroundedGenerationRequest,
+} from "./answer-twin-question.ts";
 
-test("builds a deterministic answer from retrieved portfolio evidence", () => {
-  const response = answerTwinQuestion("Tell me about his AI agents experience");
+async function collectText(stream: AsyncIterable<string>) {
+  let text = "";
+  for await (const chunk of stream) text += chunk;
+  return text;
+}
+
+test("generates from only the retrieved portfolio context", async () => {
+  let capturedRequest: GroundedGenerationRequest | undefined;
+  const response = await answerQuestion("Tell me about his AI agents experience", async (request) => {
+    capturedRequest = request;
+    return (async function* generate() {
+      yield "Grounded ";
+      yield "answer.";
+    })();
+  });
 
   assert.equal(response.sources[0]?.id, "ai-agents");
-  assert.match(response.answer, /Applied AI systems/);
+  assert.equal(capturedRequest?.context.length, response.sources.length);
+  assert.ok(capturedRequest?.context.every((item) => response.sources.some((source) => source.id === item.id)));
+  assert.equal(await collectText(response.text), "Grounded answer.");
   assert.ok(response.graphNodeIds.includes("ai-agents"));
   assert.ok(response.relatedGraphNodeIds.includes("rag"));
-  assert.ok(response.relatedGraphNodeIds.includes("semantic-layer"));
 });
 
-test("returns an explicit unsupported response without evidence", () => {
-  const response = answerTwinQuestion("xylophone nebula");
+test("does not call the model when retrieval has no evidence", async () => {
+  let called = false;
+  const response = await answerQuestion("xylophone nebula", async () => {
+    called = true;
+    return (async function* generate() { yield "Unexpected"; })();
+  });
 
+  assert.equal(called, false);
   assert.equal(response.sources.length, 0);
-  assert.equal(response.graphNodeIds.length, 0);
-  assert.equal(response.relatedGraphNodeIds.length, 0);
-  assert.match(response.answer, /could not find relevant evidence/i);
+  assert.match(await collectText(response.text), /could not find enough relevant evidence/i);
 });

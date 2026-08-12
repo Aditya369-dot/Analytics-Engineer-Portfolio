@@ -40,7 +40,7 @@ export function DigitalTwinComposer({
         </button>
       </div>
       <p className="mt-2 font-display text-[0.5rem] uppercase tracking-[0.12em] text-muted-foreground">
-        Interface preview · No AI connected
+        Grounded portfolio AI · Retrieved sources only
       </p>
     </form>
   );

@@ -1,33 +1,56 @@
 import { retrieveKnowledge } from "./retrieve-knowledge.ts";
-import type { TwinChatResponse } from "../types/digital-twin-chat.ts";
+import { streamOpenAIGroundedAnswer } from "./llm/openai-provider.ts";
+import type { PortfolioKnowledgeItem } from "../data/knowledge.ts";
+import type { TwinChatSource } from "../types/digital-twin-chat.ts";
 
-export function answerTwinQuestion(question: string): TwinChatResponse {
+const unsupportedAnswer =
+  "I could not find enough relevant evidence in the curated portfolio knowledge base to answer that question.";
+
+export type GroundedGenerationRequest = {
+  question: string;
+  context: readonly PortfolioKnowledgeItem[];
+};
+
+export type AnswerGenerator = (
+  request: GroundedGenerationRequest,
+) => Promise<AsyncIterable<string>>;
+
+export type AnswerQuestionResult = {
+  sources: readonly TwinChatSource[];
+  graphNodeIds: readonly PortfolioKnowledgeItem["id"][];
+  relatedGraphNodeIds: readonly PortfolioKnowledgeItem["id"][];
+  text: AsyncIterable<string>;
+};
+
+async function* staticAnswer(text: string) {
+  yield text;
+}
+
+export async function answerQuestion(
+  question: string,
+  generateAnswer: AnswerGenerator = streamOpenAIGroundedAnswer,
+): Promise<AnswerQuestionResult> {
   const retrieval = retrieveKnowledge(question, { limit: 3 });
-  const sources = retrieval.items.map(({ item }) => ({
+  const context = retrieval.items.map(({ item }) => item);
+  const sources = context.map((item) => ({
     id: item.id,
     title: item.title,
     summary: item.shortSummary,
   }));
 
-  if (sources.length === 0) {
+  if (context.length === 0) {
     return {
-      answer: "I could not find relevant evidence in the curated portfolio knowledge base for that question yet.",
-      sources,
+      sources: [],
       graphNodeIds: [],
       relatedGraphNodeIds: [],
+      text: staticAnswer(unsupportedAnswer),
     };
   }
 
-  const [primary, ...supporting] = sources;
-  const supportingTitles = supporting.map((source) => source.title).join(" and ");
-  const answer = supportingTitles
-    ? `${primary.summary} Related portfolio evidence includes ${supportingTitles}.`
-    : primary.summary;
-
   return {
-    answer,
     sources,
     graphNodeIds: retrieval.graphNodeIds,
     relatedGraphNodeIds: retrieval.relatedGraphNodeIds,
+    text: await generateAnswer({ question, context }),
   };
 }

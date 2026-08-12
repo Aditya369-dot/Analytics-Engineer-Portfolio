@@ -6,7 +6,7 @@ import { DigitalTwinConversation } from "@/components/hero/DigitalTwinConversati
 import {
   suggestedTwinQuestions,
 } from "@/data/digital-twin-chat";
-import { askDigitalTwin } from "@/lib/twin-chat-client";
+import { askDigitalTwin, TwinChatClientError } from "@/lib/twin-chat-client";
 import type { DigitalTwinMessage } from "@/types/digital-twin-chat";
 import type { KnowledgeItemId } from "@/data/knowledge";
 
@@ -37,30 +37,52 @@ export function DigitalTwin({ className = "", onGraphResponse }: DigitalTwinProp
     setQuestion("");
     setIsLoading(true);
     onGraphResponse?.([], []);
+    const assistantId = `assistant-${Date.now()}`;
 
     try {
-      const response = await askDigitalTwin(normalizedQuestion);
-      setMessages((current) => [
-        ...current,
-        {
-          id: `assistant-${Date.now()}`,
-          role: "assistant",
-          content: response.answer,
-          sources: response.sources,
-          graphNodeIds: response.graphNodeIds,
-          relatedGraphNodeIds: response.relatedGraphNodeIds,
+      await askDigitalTwin(normalizedQuestion, {
+        onMetadata: (metadata) => {
+          setMessages((current) => [
+            ...current,
+            {
+              id: assistantId,
+              role: "assistant",
+              content: "",
+              sources: metadata.sources,
+              graphNodeIds: metadata.graphNodeIds,
+              relatedGraphNodeIds: metadata.relatedGraphNodeIds,
+            },
+          ]);
+          onGraphResponse?.(metadata.graphNodeIds, metadata.relatedGraphNodeIds);
         },
-      ]);
-      onGraphResponse?.(response.graphNodeIds, response.relatedGraphNodeIds);
-    } catch {
-      setMessages((current) => [
-        ...current,
-        {
-          id: `assistant-${Date.now()}`,
-          role: "assistant",
-          content: "The portfolio evidence service is temporarily unavailable. Please try again.",
+        onDelta: (text) => {
+          setMessages((current) => current.map((message) =>
+            message.id === assistantId
+              ? { ...message, content: message.content + text }
+              : message,
+          ));
         },
-      ]);
+      });
+    } catch (error) {
+      const errorMessage = error instanceof TwinChatClientError && error.code === "rate_limit"
+        ? "The question limit was reached. Please wait a moment before trying again."
+        : error instanceof TwinChatClientError && error.code === "not_configured"
+          ? "The AI answer service is not configured yet."
+          : "The AI answer service is temporarily unavailable. Please try again.";
+
+      setMessages((current) => {
+        const hasAssistantMessage = current.some((message) => message.id === assistantId);
+        if (hasAssistantMessage) {
+          return current.map((message) =>
+            message.id === assistantId && !message.content
+              ? { ...message, content: errorMessage }
+              : message.id === assistantId
+                ? { ...message, content: `${message.content} The answer stream was interrupted.` }
+                : message,
+          );
+        }
+        return [...current, { id: assistantId, role: "assistant", content: errorMessage }];
+      });
     } finally {
       setIsLoading(false);
     }
@@ -91,7 +113,7 @@ export function DigitalTwin({ className = "", onGraphResponse }: DigitalTwinProp
           )}
           <span className="flex items-center gap-2 text-accent-cyan">
             <span className="size-1.5 rounded-full bg-status shadow-[0_0_10px_var(--color-status)]" />
-            Chat shell online
+            Grounded AI online
           </span>
         </div>
       </header>
