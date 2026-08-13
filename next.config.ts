@@ -4,11 +4,11 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: "/assets/cv/aditya-bholla-resume.docx",
+        source: "/assets/cv/aditya-bholla-resume.pdf",
         headers: [
           {
             key: "Content-Disposition",
-            value: 'attachment; filename="Aditya-Bholla-Resume.docx"',
+            value: 'attachment; filename="Aditya-Bholla-Resume.pdf"',
           },
           {
             key: "X-Content-Type-Options",

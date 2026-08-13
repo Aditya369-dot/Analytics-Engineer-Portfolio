@@ -8,7 +8,7 @@ export const portfolioNavigation = [
 ] as const;
 
 export const portfolioLinks = {
-  cv: "/assets/cv/aditya-bholla-resume.docx",
+  cv: "/assets/cv/aditya-bholla-resume.pdf",
   linkedin: "#contact",
   github: "#contact",
   email: "#contact",
@@ -173,8 +173,8 @@ export const techStack = [
 
 export const contactContent = {
   label: "Start a conversation",
-  title: "Have a project in mind? Let’s talk.",
+  title: "Interested in working together? Let’s talk.",
   description:
-    "For Data + AI systems, analytics engineering and platform opportunities, reach out through any configured channel.",
+    "Whether you’re discussing a role, a consulting engagement, or a Data + AI system, I’d be glad to connect.",
   cta: { label: "Get in touch", href: portfolioLinks.email },
 } as const;
