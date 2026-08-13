@@ -2,6 +2,12 @@ import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 
+const siteUrl = new URL("https://snapbiz.ai");
+
+const siteTitle = "Aditya Bholla | Data + AI Engineer";
+const siteDescription =
+  "Portfolio of Aditya Bholla, a Data + AI engineer building analytics platforms, data systems, and grounded AI solutions.";
+
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
@@ -13,8 +19,23 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Aditya Bholla",
-  description: "Data and AI engineer portfolio.",
+  metadataBase: siteUrl,
+  title: siteTitle,
+  description: siteDescription,
+  applicationName: "Aditya Bholla Portfolio",
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    title: siteTitle,
+    description: siteDescription,
+    siteName: "Aditya Bholla Portfolio",
+    url: "/",
+  },
+  twitter: {
+    card: "summary",
+    title: siteTitle,
+    description: siteDescription,
+  },
 };
 
 export default function RootLayout({

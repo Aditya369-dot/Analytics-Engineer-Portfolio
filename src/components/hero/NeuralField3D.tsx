@@ -3,15 +3,15 @@ import { useFrame } from "@react-three/fiber";
 import { Color, type Group, type Points } from "three";
 
 type NeuralField3DProps = {
+  compact: boolean;
   reducedMotion: boolean;
 };
 
-const particleCount = 120;
-
-export function NeuralField3D({ reducedMotion }: NeuralField3DProps) {
+export function NeuralField3D({ compact, reducedMotion }: NeuralField3DProps) {
   const groupRef = useRef<Group>(null);
   const fieldRef = useRef<Points>(null);
   const positions = useMemo(() => {
+    const particleCount = compact ? 64 : 120;
     const values = new Float32Array(particleCount * 3);
 
     for (let index = 0; index < particleCount; index += 1) {
@@ -23,8 +23,9 @@ export function NeuralField3D({ reducedMotion }: NeuralField3DProps) {
     }
 
     return values;
-  }, []);
+  }, [compact]);
   const connections = useMemo(() => {
+    const particleCount = positions.length / 3;
     const values = new Float32Array(particleCount * 2 * 3);
     for (let index = 0; index < particleCount; index += 1) {
       const target = (index + 7 + (index % 5)) % particleCount;
@@ -34,14 +35,15 @@ export function NeuralField3D({ reducedMotion }: NeuralField3DProps) {
     return values;
   }, [positions]);
   const brightPositions = useMemo(() => {
-    const count = 18;
+    const particleCount = positions.length / 3;
+    const count = compact ? 9 : 18;
     const values = new Float32Array(count * 3);
     for (let index = 0; index < count; index += 1) {
       const source = (index * 7) % particleCount;
       values.set(positions.slice(source * 3, source * 3 + 3), index * 3);
     }
     return values;
-  }, [positions]);
+  }, [compact, positions]);
 
   useFrame((_, delta) => {
     if (!reducedMotion && fieldRef.current) {

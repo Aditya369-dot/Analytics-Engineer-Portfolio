@@ -9,6 +9,8 @@ import {
   type GraphNodeId,
 } from "@/data/graph-data";
 import { GraphNodeDetails } from "@/components/hero/GraphNodeDetails";
+import { TwinVoiceControlPill } from "@/components/hero/TwinVoiceControlPill";
+import type { TwinSpeechController } from "@/hooks/useTwinSpeech";
 
 type KnowledgeGraphProps = {
   className?: string;
@@ -16,6 +18,7 @@ type KnowledgeGraphProps = {
   focus: GraphFocus;
   onNodeSelect: (nodeId: GraphNodeId) => void;
   onFocusClear: () => void;
+  speech: TwinSpeechController;
 };
 
 const categoryStyles = {
@@ -36,6 +39,7 @@ export function KnowledgeGraph({
   focus,
   onNodeSelect,
   onFocusClear,
+  speech,
 }: KnowledgeGraphProps) {
   const [hoveredId, setHoveredId] = useState<GraphNodeId | null>(null);
   const [rotation, setRotation] = useState(0);
@@ -291,6 +295,8 @@ export function KnowledgeGraph({
           </g>
         </g>
       </svg>
+
+      <TwinVoiceControlPill speech={speech} />
 
       {(!integrated || selectedNode) && <div className={`${integrated ? "pointer-events-none absolute bottom-4 left-1/2 z-20 w-[min(25rem,90%)] -translate-x-1/2" : "absolute inset-x-0 bottom-0 z-20"}`}>
         {!integrated && <div className="flex items-center justify-between px-4 pb-2 font-display text-[0.5rem] uppercase tracking-[0.14em] text-muted-foreground">

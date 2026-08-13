@@ -19,6 +19,7 @@ import {
 import type { GraphDragController } from "./graph-drag-state";
 
 type KnowledgeGraphSceneProps = {
+  compact: boolean;
   focusedId: GraphNodeId | null;
   highlightedIds: ReadonlySet<GraphNodeId>;
   reducedMotion: boolean;
@@ -32,6 +33,7 @@ type KnowledgeGraphSceneProps = {
 };
 
 export function KnowledgeGraphScene({
+  compact,
   focusedId,
   highlightedIds,
   reducedMotion,
@@ -74,7 +76,7 @@ export function KnowledgeGraphScene({
   return (
     <group name="knowledge-graph-scene">
       <group ref={graphRef} name="rotatable-knowledge-world">
-      <NeuralField3D reducedMotion={reducedMotion} />
+      <NeuralField3D compact={compact} reducedMotion={reducedMotion} />
       <GraphLinks3D
         activeColor={graphSceneConfig.colors.activeLink}
         color={graphSceneConfig.colors.link}
@@ -96,11 +98,12 @@ export function KnowledgeGraphScene({
         onSelect={onSelect}
       />
       <GraphLabels3D
+        compact={compact}
         focusedId={focusedId}
         nodes={graphSceneNodes}
         selectedId={selectedId}
       />
-      <DigitalTwinEntity mode="model" scale={1.18} radius={0.2} />
+      <DigitalTwinEntity mode="portrait" scale={1.38} radius={0.2} reducedMotion={reducedMotion} />
       </group>
       {postProcessing && <EffectComposer multisampling={highQuality ? 2 : 0} enableNormalPass={false}>
         <Bloom

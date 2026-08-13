@@ -5,13 +5,16 @@
 1. Copy `.env.example` to `.env.local`.
 2. Set `OPENAI_API_KEY` only in `.env.local`.
 3. Optionally set `OPENAI_MODEL` to an approved server-side model identifier.
-4. Never put a real value in `.env.example`, source code, logs, screenshots, issues, or chat messages.
+4. Optionally configure `TTS_PROVIDER`, `TTS_MODEL`, and `TTS_VOICE`. These are server-side identifiers, not credentials.
+5. Never put a real value in `.env.example`, source code, logs, screenshots, issues, or chat messages.
 
 `.env.local` and other secret-bearing environment variants are ignored by Git. `.env.example` is intentionally trackable and must contain variable names and safe defaults only.
 
 ## Production
 
 Configure `OPENAI_API_KEY` in the deployment platform's encrypted environment-variable settings. Do not place it in repository files, build arguments, or client-visible configuration.
+
+`OPENAI_MODEL`, `TTS_PROVIDER`, `TTS_MODEL`, and `TTS_VOICE` may also be configured in the deployment platform. The application uses safe defaults when they are omitted. Spoken answers use the same server-only `OPENAI_API_KEY` and fail silently without affecting grounded text answers.
 
 The key must never use a `NEXT_PUBLIC_` prefix. Next.js exposes variables with that prefix to browser bundles. Only modules under `src/server/` may read provider credentials, and client components must communicate through the server API route.
 

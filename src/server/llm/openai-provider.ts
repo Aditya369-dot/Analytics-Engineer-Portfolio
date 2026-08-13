@@ -83,9 +83,9 @@ export async function streamOpenAIGroundedAnswer(
     body: JSON.stringify({
       model: config.model,
       instructions:
-        "Answer as Aditya's portfolio digital twin. Use only the supplied curated portfolio evidence. Do not infer or invent employers, experience, metrics, dates, skills, or project outcomes. If the evidence is insufficient, say so clearly. Keep the answer concise and factual.",
+        "Answer as Aditya's portfolio digital twin. Use only the supplied curated portfolio evidence. Do not infer or invent employers, experience, metrics, dates, skills, or project outcomes. If the evidence is insufficient, say so clearly. Default to 2-4 concise, conversational, recruiter-friendly sentences while preserving important factual grounding.",
       input: buildGroundedInput(request),
-      max_output_tokens: 700,
+      max_output_tokens: 420,
       reasoning: { effort: "low" },
       stream: true,
     }),

@@ -8,6 +8,7 @@ import {
   suggestedTwinQuestions,
 } from "@/data/digital-twin-chat";
 import { askDigitalTwin, TwinChatClientError } from "@/lib/twin-chat-client";
+import type { TwinSpeechController } from "@/hooks/useTwinSpeech";
 import type { DigitalTwinNarration as DigitalTwinNarrationState } from "@/types/digital-twin-chat";
 import type { KnowledgeItemId } from "@/data/knowledge";
 
@@ -19,13 +20,15 @@ export type DigitalTwinProps = {
     requestId: number,
   ) => void;
   onQuestionStart?: (requestId: number) => void;
+  speech: TwinSpeechController;
 };
 
-export function DigitalTwin({ className = "", onGraphResponse, onQuestionStart }: DigitalTwinProps) {
+export function DigitalTwin({ className = "", onGraphResponse, onQuestionStart, speech }: DigitalTwinProps) {
   const [question, setQuestion] = useState("");
   const [narration, setNarration] = useState<DigitalTwinNarrationState | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const requestCounter = useRef(0);
+  const { speak, stopSpeech, unlock } = speech;
 
   const submitQuestion = async (nextQuestion = question) => {
     const normalizedQuestion = nextQuestion.trim();
@@ -33,6 +36,9 @@ export function DigitalTwin({ className = "", onGraphResponse, onQuestionStart }
 
     const requestId = ++requestCounter.current;
     const narrationId = `narration-${requestId}`;
+    let answerText = "";
+    stopSpeech();
+    void unlock();
     setQuestion("");
     setIsLoading(true);
     setNarration({ id: narrationId, content: "", sources: [], status: "streaming" });
@@ -49,11 +55,13 @@ export function DigitalTwin({ className = "", onGraphResponse, onQuestionStart }
         },
         onDelta: (text) => {
           if (requestCounter.current !== requestId) return;
+          answerText += text;
           setNarration((current) => current?.id === narrationId
             ? { ...current, content: current.content + text }
             : current);
         },
       });
+      if (requestCounter.current === requestId && answerText.trim()) void speak(answerText);
     } catch (error) {
       const errorMessage = error instanceof TwinChatClientError && error.code === "rate_limit"
         ? "The question limit was reached. Please wait a moment before trying again."
@@ -80,6 +88,7 @@ export function DigitalTwin({ className = "", onGraphResponse, onQuestionStart }
 
   const clearConversation = () => {
     requestCounter.current += 1;
+    stopSpeech();
     setNarration(null);
     setQuestion("");
     setIsLoading(false);

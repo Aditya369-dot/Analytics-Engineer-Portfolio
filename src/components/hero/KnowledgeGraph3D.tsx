@@ -6,6 +6,8 @@ import { Canvas } from "@react-three/fiber";
 
 import { GraphNodeDetails } from "@/components/hero/GraphNodeDetails";
 import { KnowledgeGraph } from "@/components/hero/KnowledgeGraph";
+import { TwinVoiceControlPill } from "@/components/hero/TwinVoiceControlPill";
+import type { TwinSpeechController } from "@/hooks/useTwinSpeech";
 import {
   graphEdges,
   graphNodes,
@@ -29,6 +31,7 @@ type KnowledgeGraph3DProps = {
   focus: GraphFocus;
   onNodeSelect: (nodeId: GraphNodeId) => void;
   onFocusClear: () => void;
+  speech: TwinSpeechController;
 };
 
 function supportsEnhancedGraph() {
@@ -54,11 +57,13 @@ export function KnowledgeGraph3D({
   focus,
   onNodeSelect,
   onFocusClear,
+  speech,
 }: KnowledgeGraph3DProps) {
   const [renderingMode, setRenderingMode] = useState<RenderingMode>("checking");
   const [reducedMotion, setReducedMotion] = useState(true);
   const [highQuality, setHighQuality] = useState(false);
   const [postProcessing, setPostProcessing] = useState(false);
+  const [compact, setCompact] = useState(true);
   const [hoveredId, setHoveredId] = useState<GraphNodeId | null>(null);
   const canvasPointerStart = useRef<{ x: number; y: number } | null>(null);
   const graphDrag = useRef(new GraphDragController());
@@ -73,6 +78,7 @@ export function KnowledgeGraph3D({
     const capabilityCheck = window.requestAnimationFrame(() => {
       setRenderingMode(supportsEnhancedGraph() ? "webgl" : "fallback");
       const compact = window.matchMedia("(max-width: 639px)").matches;
+      setCompact(compact);
       setHighQuality(!compact && (navigator.hardwareConcurrency ?? 4) >= 8 && window.devicePixelRatio <= 2);
       setPostProcessing(!compact);
     });
@@ -109,6 +115,7 @@ export function KnowledgeGraph3D({
         focus={focus}
         onNodeSelect={onNodeSelect}
         onFocusClear={onFocusClear}
+        speech={speech}
       />
     );
   }
@@ -185,6 +192,7 @@ export function KnowledgeGraph3D({
           <KnowledgeGraphScene
             focusedId={hoveredId ?? persistentFocusId}
             highlightedIds={highlightedIds}
+            compact={compact}
             highQuality={highQuality}
             postProcessing={postProcessing}
             dragState={graphDrag}
@@ -213,6 +221,8 @@ export function KnowledgeGraph3D({
           </button>
         ))}
       </div>
+
+      <TwinVoiceControlPill speech={speech} />
 
       {(!integrated || selectedNode) && <div className={`${integrated ? "pointer-events-none absolute bottom-4 left-1/2 z-20 w-[min(25rem,90%)] -translate-x-1/2" : "absolute inset-x-0 bottom-0 z-20"}`}>
         {!integrated && <div className="flex items-center justify-between px-4 pb-2 font-display text-[0.5rem] uppercase tracking-[0.14em] text-muted-foreground">

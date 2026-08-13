@@ -128,6 +128,7 @@ function ProjectCard({ project }: { project: Project }) {
 export function Projects() {
   return (
     <section id="projects" className="scroll-mt-24 py-16 sm:py-20 lg:py-24">
+      <span id="architecture" className="block scroll-mt-24" aria-hidden="true" />
       <Container>
         <div className="flex flex-col justify-between gap-4 border-b border-panel-border pb-7 sm:flex-row sm:items-end">
           <div>

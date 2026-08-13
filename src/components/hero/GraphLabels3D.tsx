@@ -6,6 +6,7 @@ import type { GraphSceneNode } from "./graph-scene-config";
 import { graphSceneLinks } from "./graph-scene-config";
 
 type GraphLabels3DProps = {
+  compact: boolean;
   focusedId: GraphNodeId | null;
   nodes: readonly GraphSceneNode[];
   selectedId: GraphNodeId | null;
@@ -64,7 +65,7 @@ function GraphLabel({ node, opacity, prominent }: { node: GraphSceneNode; opacit
   );
 }
 
-export function GraphLabels3D({ focusedId, nodes, selectedId }: GraphLabels3DProps) {
+export function GraphLabels3D({ compact, focusedId, nodes, selectedId }: GraphLabels3DProps) {
   const connectedIds = new Set<GraphNodeId>();
   if (focusedId) {
     connectedIds.add(focusedId);
@@ -78,6 +79,7 @@ export function GraphLabels3D({ focusedId, nodes, selectedId }: GraphLabels3DPro
     <group name="knowledge-graph-labels">
       {nodes.map((node) => {
         if (node.data.level === "tertiary" && node.data.id !== focusedId && node.data.id !== selectedId) return null;
+        if (compact && node.data.level === "secondary" && node.data.id !== focusedId && node.data.id !== selectedId) return null;
         const prominent =
             node.data.id === focusedId ||
             node.data.id === selectedId ||

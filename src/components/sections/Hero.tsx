@@ -7,6 +7,7 @@ import { KnowledgeGraph3D } from "@/components/hero/KnowledgeGraph3D";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { Container } from "@/components/ui/Container";
 import { SectionLabel } from "@/components/ui/SectionLabel";
+import { useTwinSpeech } from "@/hooks/useTwinSpeech";
 import {
   emptyGraphFocus,
   graphFocusFromKnowledgeIds,
@@ -46,6 +47,7 @@ function SocialIcon({ icon }: SocialIconProps) {
 
 export function Hero() {
   const [activeFocus, setActiveFocus] = useState<GraphFocus>(emptyGraphFocus);
+  const speech = useTwinSpeech();
   const activeAiRequest = useRef(0);
   const manualOverride = useRef(false);
   const titleWords = heroContent.titleLead.split(" ");
@@ -82,6 +84,7 @@ export function Hero() {
           focus={activeFocus}
           onNodeSelect={selectNode}
           onFocusClear={clearFocus}
+          speech={speech}
         />
 
         <div className="relative z-20 order-1 py-2 md:col-span-2 xl:col-span-1 xl:pr-4">
@@ -135,6 +138,7 @@ export function Hero() {
           className="relative z-30 order-3 min-h-60 bg-background-elevated/82 shadow-[0_0_42px_rgba(7,8,13,.7),0_0_22px_rgba(139,92,246,.08)] backdrop-blur-md sm:min-h-72 md:min-h-[23rem] xl:col-start-3 xl:min-h-[27rem] xl:w-[18rem] xl:justify-self-end"
           onQuestionStart={startAiQuestion}
           onGraphResponse={applyAiFocus}
+          speech={speech}
         />
       </Container>
     </section>
