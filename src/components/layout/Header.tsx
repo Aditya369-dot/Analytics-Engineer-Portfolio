@@ -52,6 +52,8 @@ export function Header() {
         <div className="flex items-center gap-3">
           <ButtonLink
             href={portfolioLinks.cv}
+            download="Aditya-Bholla-Resume.docx"
+            aria-label="Download Aditya Bholla's resume"
             className="hidden min-h-9 px-3.5 py-1.5 text-[0.6875rem] sm:inline-flex"
           >
             Download CV
@@ -97,6 +99,8 @@ export function Header() {
             ))}
             <ButtonLink
               href={portfolioLinks.cv}
+              download="Aditya-Bholla-Resume.docx"
+              aria-label="Download Aditya Bholla's resume"
               className="mt-3 sm:hidden"
               onClick={closeMenu}
             >

@@ -101,13 +101,10 @@ export function Hero() {
             {heroContent.description}
           </p>
 
-          <div className="mt-6 flex flex-col gap-2.5 sm:flex-row">
+          <div className="mt-6 flex">
             <ButtonLink className="min-h-10 px-4 py-2 text-xs" href={heroContent.actions.primary.href}>
               {heroContent.actions.primary.label}
               <span className="ml-2" aria-hidden="true">↗</span>
-            </ButtonLink>
-            <ButtonLink className="min-h-10 px-4 py-2 text-xs" href={heroContent.actions.secondary.href} variant="secondary">
-              {heroContent.actions.secondary.label}
             </ButtonLink>
           </div>
 

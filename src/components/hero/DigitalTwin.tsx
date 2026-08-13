@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DigitalTwinComposer } from "@/components/hero/DigitalTwinComposer";
 import { DigitalTwinConversation } from "@/components/hero/DigitalTwinConversation";
 import { DigitalTwinNarration } from "@/components/hero/DigitalTwinNarration";
@@ -11,6 +11,8 @@ import { askDigitalTwin, TwinChatClientError } from "@/lib/twin-chat-client";
 import type { TwinSpeechController } from "@/hooks/useTwinSpeech";
 import type { DigitalTwinNarration as DigitalTwinNarrationState } from "@/types/digital-twin-chat";
 import type { KnowledgeItemId } from "@/data/knowledge";
+
+const initialGreeting = "Hey there, good to see you here.";
 
 export type DigitalTwinProps = {
   className?: string;
@@ -25,15 +27,56 @@ export type DigitalTwinProps = {
 
 export function DigitalTwin({ className = "", onGraphResponse, onQuestionStart, speech }: DigitalTwinProps) {
   const [question, setQuestion] = useState("");
-  const [narration, setNarration] = useState<DigitalTwinNarrationState | null>(null);
+  const [narration, setNarration] = useState<DigitalTwinNarrationState | null>({
+    id: "initial-greeting",
+    content: initialGreeting,
+    sources: [],
+    status: "complete",
+  });
   const [isLoading, setIsLoading] = useState(false);
   const requestCounter = useRef(0);
+  const greetingAttempted = useRef(false);
+  const greetingPending = useRef(true);
   const { speak, stopSpeech, unlock } = speech;
+
+  useEffect(() => {
+    let disposed = false;
+
+    const removeInteractionListeners = () => {
+      window.removeEventListener("pointerdown", playDeferredGreeting);
+      window.removeEventListener("keydown", playDeferredGreeting);
+    };
+    const playDeferredGreeting = () => {
+      if (disposed || !greetingPending.current) return;
+      greetingPending.current = false;
+      removeInteractionListeners();
+      void speak(initialGreeting);
+    };
+    const attemptGreeting = async () => {
+      window.addEventListener("pointerdown", playDeferredGreeting);
+      window.addEventListener("keydown", playDeferredGreeting);
+      if (!greetingAttempted.current) {
+        greetingAttempted.current = true;
+        const started = await speak(initialGreeting);
+        if (started) {
+          greetingPending.current = false;
+          removeInteractionListeners();
+        }
+      }
+    };
+
+    void attemptGreeting();
+    return () => {
+      disposed = true;
+      removeInteractionListeners();
+    };
+  }, [speak]);
 
   const submitQuestion = async (nextQuestion = question) => {
     const normalizedQuestion = nextQuestion.trim();
     if (!normalizedQuestion || isLoading) return;
 
+    greetingPending.current = false;
     const requestId = ++requestCounter.current;
     const narrationId = `narration-${requestId}`;
     let answerText = "";

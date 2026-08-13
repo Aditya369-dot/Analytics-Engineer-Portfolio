@@ -8,7 +8,7 @@ export const portfolioNavigation = [
 ] as const;
 
 export const portfolioLinks = {
-  cv: "#contact",
+  cv: "/assets/cv/aditya-bholla-resume.docx",
   linkedin: "#contact",
   github: "#contact",
   email: "#contact",
@@ -23,7 +23,6 @@ export const heroContent = {
   status: "Available for Data + AI opportunities",
   actions: {
     primary: { label: "Explore my work", href: "#projects" },
-    secondary: { label: "View architecture", href: "#architecture" },
   },
 } as const;
 

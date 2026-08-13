@@ -36,9 +36,9 @@ export function useTwinSpeech() {
     if (contextRef.current.state === "suspended") await contextRef.current.resume();
   }, []);
 
-  const speak = useCallback(async (text: string) => {
+  const speak = useCallback(async (text: string): Promise<boolean> => {
     stop();
-    if (mutedRef.current || !text.trim()) return;
+    if (mutedRef.current || !text.trim()) return false;
 
     const abortController = new AbortController();
     activeRef.current = { abortController };
@@ -50,12 +50,12 @@ export function useTwinSpeech() {
         body: JSON.stringify({ text }),
         signal: abortController.signal,
       });
-      if (!response.ok || !response.body || abortController.signal.aborted) return;
+      if (!response.ok || !response.body || abortController.signal.aborted) return false;
 
       const context = contextRef.current;
-      if (!context) return;
+      if (!context) return false;
       const buffer = await context.decodeAudioData(await response.arrayBuffer());
-      if (abortController.signal.aborted) return;
+      if (abortController.signal.aborted) return false;
 
       const source = context.createBufferSource();
       const analyser = context.createAnalyser();
@@ -88,8 +88,10 @@ export function useTwinSpeech() {
       };
       source.start();
       analyse();
+      return true;
     } catch {
       if (!abortController.signal.aborted) resetTwinSpeechAnimation();
+      return false;
     }
   }, [stop, unlock]);
 
